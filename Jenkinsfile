@@ -3,7 +3,9 @@ pipeline {
 
     environment {
         SONARQUBE = 'SonarQubeServer'
+        SONAR_PROJECT_KEY = 'POC6'
         DOCKER_IMAGE = 'myapp:latest'
+        SONAR_HOST_URL = 'http://20.51.208.16/:9000'
     }
 
     stages {
@@ -21,9 +23,17 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
+            environment {
+                SONAR_TOKEN = credentials('sonar') // Must exist in Jenkins credentials
+            }
             steps {
-                withSonarQubeEnv("${SONARQUBE}") {
-                    sh 'mvn sonar:sonar'
+                withSonarQubeEnv('My SonarQube Server') {
+                    sh """
+                        mvn sonar:sonar \
+                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                          -Dsonar.host.url=${SONAR_HOST_URL} \
+                          -Dsonar.login=${SONAR_TOKEN}
+                    """
                 }
             }
         }
